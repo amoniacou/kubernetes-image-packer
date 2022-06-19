@@ -1,0 +1,70 @@
+{
+  "builders": [
+    {
+      "accelerator": "kvm",
+      "boot_command": [
+        "<enter>"
+      ],
+      "disk_compression": true,
+      "disk_image": true,
+      "disk_size": "{{ user `disk_size` }}",
+      "format": "qcow2",
+      "headless": true,
+      "iso_checksum": "{{ user `image_checksum_type` }}:{{ user `image_checksum` }}",
+      "iso_url": "{{ user `image_url` }}",
+      "output_directory": "build",
+      "qemuargs": [
+        [
+          "-m",
+          "{{ user `memory` }}"
+        ],
+        [
+          "-smp",
+          "cpus={{ user `cpus` }}"
+        ],
+        [
+          "-cdrom",
+          "{{ user `cloud_init_image` }}"
+        ],
+        [
+          "-serial",
+          "mon:stdio"
+        ]
+      ],
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_port": 22,
+      "ssh_timeout": "300s",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "type": "qemu",
+      "use_default_display": false,
+      "vm_name": "{{ user `vm_name` }}"
+    }
+  ],
+  "provisioners": [
+    {
+      "execute_command": "echo '{{ user `ssh_password` }}' | {{.Vars}} sudo -E -S bash -x '{{.Path}}'",
+      "scripts": [
+        "setup.sh"
+      ],
+      "type": "shell"
+    },
+    {
+      "inline": [
+        "sudo sync"
+      ],
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "cloud_init_image": "cloud-init.img",
+    "cpus": "4",
+    "disk_size": "8192",
+    "image_checksum": "5ba6cd7ad9b7b792879064b8384fbc98e00d9799f682a226117c153629fb22d3",
+    "image_checksum_type": "sha256",
+    "image_url": "https://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-minimal-cloudimg-amd64.img",
+    "memory": "8096M",
+    "ssh_password": "P4s5W0rD",
+    "ssh_username": "ubuntu",
+    "vm_name": "kubernetes-{{timestamp}}.qcow2"
+  }
+}
